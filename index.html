@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Por si alguien nos escucha</title>
+<style>
+    #sky{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-2;
+
+    background:
+    linear-gradient(
+        180deg,
+        #090d22,
+        #0f172a,
+        #111827
+    );
+}
+body{margin:0;font-family:"Trebuchet MS","Segoe UI",sans-serif;background:linear-gradient(180deg,#0f172a,#1e1b4b);color:#fff;overflow:hidden}
+#stars{position:fixed;inset:0}
+.center{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:800px;background:rgba(255,255,255,.08);backdrop-filter:blur(12px);padding:30px;border-radius:24px;text-align:center;border:1px solid rgba(255,255,255,.15);transition:all .6s ease;box-shadow:0 0 40px rgba(139,92,246,.15)}
+button,.choice{cursor:pointer;border:none;border-radius:20px;padding:14px 22px}
+.choices{display:none;gap:20px;flex-wrap:wrap;justify-content:center}
+.choice{width:260px;height:180px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#222}
+.racional{background:linear-gradient(135deg,#bfdbfe,#ddd6fe)}
+.sentimental{background:linear-gradient(135deg,#fbcfe8,#e9d5ff)}
+.hidden{display:none}
+#secret{display:none;font-size:40px;cursor:pointer;margin-top:20px}
+.small{position:fixed;bottom:10px;width:100%;text-align:center;opacity:.7}
+
+.choice{
+position:relative;
+border-radius:25px;
+box-shadow:0 10px 25px rgba(0,0,0,.25);
+transition:.35s;
+}
+.choice:hover{
+transform:translateY(-8px) scale(1.03);
+}
+.choice::before{
+content:"🎀";
+position:absolute;
+top:10px;
+left:12px;
+font-size:30px;
+}
+#reader{
+font-size:18px;
+line-height:1.8;
+max-height:70vh;
+overflow-y:auto;
+padding-right:10px;
+}
+
+
+.nebula1,.nebula2{
+position:fixed;
+border-radius:50%;
+filter:blur(90px);
+pointer-events:none;
+z-index:-1;
+opacity:.18;
+animation:floatNebula 18s ease-in-out infinite;
+}
+.nebula1{
+width:320px;height:320px;
+background:#8b5cf6;
+top:5%;left:5%;
+}
+.nebula2{
+width:420px;height:420px;
+background:#60a5fa;
+bottom:5%;right:5%;
+animation-delay:-8s;
+}
+@keyframes floatNebula{
+50%{transform:translate(30px,-25px)}
+}
+#secret{
+animation:pulseStar 2.2s infinite;
+}
+@keyframes pulseStar{
+50%{transform:scale(1.08)}
+}
+.card,.choice{
+backdrop-filter:blur(8px);
+}
+
+
+.fadeIn{animation:fadeIn .8s ease;}
+@keyframes fadeIn{
+from{opacity:0;transform:scale(.96)}
+to{opacity:1;transform:scale(1)}
+}
+.secretUnlocked{
+animation:secretAppear 1.5s ease;
+}
+@keyframes secretAppear{
+0%{opacity:0;transform:scale(.5)}
+70%{transform:scale(1.15)}
+100%{opacity:1;transform:scale(1)}
+}
+.skyGlow{
+animation:skyGlow 3s ease;
+}
+@keyframes skyGlow{
+0%,100%{filter:brightness(1)}
+50%{filter:brightness(1.35)}
+}
+
+
+#reader{
+background:#fffdf7 !important;
+color:#2d2d2d !important;
+padding:35px !important;
+border-radius:12px !important;
+position:relative;
+box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+#reader::after{
+content:'';
+position:absolute;
+top:0;
+right:0;
+width:70px;
+height:70px;
+background:linear-gradient(135deg,#e9e3d5 50%, transparent 50%);
+border-top-right-radius:12px;
+}
+#reader::before{
+content:'✏️';
+position:absolute;
+right:-35px;
+bottom:20px;
+font-size:40px;
+transform:rotate(-15deg);
+}
+#title{
+font-size:32px;
+margin-bottom:20px;
+}
+
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas><div class="nebula1"></div><div class="nebula2"></div>
+
+<div class="wrap">
+
+
+<div class="center">
+<div class="card">
+<div id="welcome">
+<h1>Por si alguien nos escucha...</h1>
+<p><em>De mí, para ti ✨</em></p>
+<p>
+Antes de continuar...<br><br>
+No sé cuándo, dónde o cómo estarás leyendo esto.<br>
+Tal vez sea un día cualquiera...<br>
+Tal vez te sientas bien o mal...<br>
+O quizá simplemente sea el momento...
+</p>
+<button onclick="start()">⭐ Comenzar</button>
+</div>
+
+<div id="menu" class="hidden">
+<h2>Elige una carta</h2>
+<div class="choices" style="display:flex">
+<div class="choice racional" onclick="openLetter('r')">🎀 Lo que ha pensado mi parte racional</div>
+<div class="choice sentimental" onclick="openLetter('s')">🎀 Lo que diría mi parte sentimental</div>
+</div>
+<div id="secret" onclick="shared()">
+⭐
+<p style="font-size:16px;margin-top:8px;">
+Hay un pensamiento que ambas partes comparten...<br>
+Toca aquí para descubrirlo.
+</p>
+</div>
+</div>
+
+<div id="reader" class="hidden">
+<h2 id="title"></h2>
+<p id="text"></p>
+<button onclick="back()">Volver</button>
+</div>
+</div>
+</div>
+
+<div class="small">Bajo el mismo cielo.</div>
+
+<audio id="bgMusic" loop>
+<source src="vang.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const textoRacional=`19-06-2026
+
+Después de leer el último mensaje que me dejó anoche siendo las 4:29 de la mañana llegaron a mi pensamientos de razonamiento no se si sean buenos o malos pero creo que es lo correcto para ella, me dice en su último mensaje "Y de vrdd, lamento q las cosas sean así, o tal vez, q yo sea así. Mereces mucho más y de corazón, espero q encuentres a una excelente mujer q sea lo suficientemente buena para tí, no mereces q te den menos"...
+Primero que todo pienso en el que echo de que la verdad no hay razón para pensar de esa manera y menos en estos momentos de que si merezco o no merezco se que todo llega con el paso del tiempo aveces para bien o para mal, aveces para hacernos sentir mal o simplemente para cambarnos la vida... 
+
+Ella dice algo importante "o talvez q yo sea asi" ella dice claramente que la indicada no es ella (o simplemente no está en su mejor momento para serlo) y que no lo merece o "que soy demasiado" mi razonamiento aquí se parte a la mitad dándole la razón en un sentido y despidiéndose quedar con ella. En el primer sentido, ella necesita curarse a ella misma darse cuenta y auto describirse que y saber q ella es una persona increíble aunque por ahora no lo vea, es una buena chica muy atenta, cariñosa aunque no lo crea tiene un buen corazón, es dedicada cuando se lo propone, tiene una única y bonita forma de ser a pesar de que lo niegue y si vieras sus rasgos físicos que enamoraría a alguien que realmente la quiera como es y no a alguien que la idealize, para mi ha sido muy importante ya que más que quererla marcó en mi vida un punto distinto de ver las cosas no me dejo llegar al punto de amarla tanto ya no tuve tanto tiempo para hacerlo y no me dejo conocer tanto de ella como realmente lo esperaba y no porque no quisiera yo si no porque ella en estos momentos no está en en su mejor momento, ahora viene lo difícil y un pensamiento que me vuela la cabeza literalmente al pensar que debería dejarla ir ya que "amar también es dejar ir" se que ella me gusta mucho, me encanta demasiado su forma bonita sus cariños sus rasgos físicos y que duele en el solo echo de pensar que nunca la volveré a ver pero nuevamente repito "amar es dejar ir" es muy doloroso para mi escribir eso aquí con lágrimas en los ojos porque hay una parte de mi que hubiese querido que fuera ella, solamente ella, porque ella a pensar del poco tiempo lo era todo... Se que suena raro ya que como lo mencione antes no la conozco  tan bien y me hubiera gustado conocerla más... A mi me gustaría el echo de que lo supiera y no se esperarla y algún día amarla profundamente pero.... Lamentablemente así no funciona esta vida no se cuanto tiempo le lleve tomar recuperarse, no se que tan mal esta.... No se realmente por que este ella pasando por esos momentos, se que tomo distancia conmigo no por ser egoísta conmigo ni porque ella no haya querido nada conmigo, si no que lo hizo por los dos, primero porque en lo que me contaba yo si le gustaba a ella y le llegue a generar cierto vínculo de atracción más allá del gusto visual, y segundo porque ella ahora no está en una condición de llegar a amar a alguien... Curiosos pensar que desicion de mi parte es dejarla ir y que sería lo mejor (desde un punto de vista de dejarte descansar)... Pero recalcó el echo de que realmente yo lo quería todo con ella (y lo hubiera dado todo) y de cierta manera tiene razón en sus palabras la verdad yo si merezco a alguien que me ame y que me haga sentirlo "merezco una excelente mujer" llego a pensar que lo dice más por el echo de ella no esta preparada para eso... Y no se la razon de que ella está herida por una relación del pasado que la dejo marcada para siempre... En parte tiene razón pero la verdad siento un bloqueo emocional que solamente en estos momentos puedo liberar con ella, en estos momentos no me dan ganas de conocer a alguien de forma sentimental o llegar a querer a alguien como lo hago actualmente con ella solamente quiero seguir mi vida aveces pienso que es mejor estar solo y que la vida me dará menos decepciones y frustraciones, es una desicion bastante contradictoria de mi parte porque hay una parte de mi que busca cariño amor y comprensión y es tan fuerte que cuando estoy solo me genera frustración y depresión, la verdad no se que vaya a pasar pero me hubiera gustado que ella leyera esto antes de que nos dejáramos de hablar talvez.. Para siempre... La verdad es que no me gustaría irme de su lado me gustaría acompañarla en cada momento así sea bueno o malo quisiera saber si ella está bien y celebrarselo o si esta mal apoyarla y hacerle ver lo importante que es y que ella puede con todo porque es una mujer que no se rinde tan fácil, me gusta sentirla a mi lado esa mirada ese calorcito que tiene esa forma de mirarme esa manera en la que...manifiesta su cariño atrevez del contacto físico, esos ojos que reflejan un mirador lleno de esperanzas(o como una frase que me gusta a mi "unos ojos que iluminarian Manhattan")... Y su sonrisa cuando la vi fue de lo primero que me enamore ya que es tan hermosa que me quedo sin palabras para expresar lo hermosa que es y me hize una promesa la cual era hacerle ver lo bonita la vida a pesar de las dificultades y malos momentos, y que cada vez que la vea sonreír era una esperanza de que todo saldría bien ya que esa sonrisa refleja todo lo bueno y bonito que ella pueda brindar....
+
+Es doloso escribir estas palabras con lágrimas en los ojos de desilusión y que realmente la quería mucho pero creo que es lo mejor, la verdad si prefiero verla por el bienestar y la felicidad de ella ya que ella si se lo merece aunque ella no lo quiera aceptar ahorita pero quiero que sepa que ella es una gran persona y que un mal momento no deje que su autoestima se caiga por el piso porque en esta vida se trata de caer y levantarse, y con las heridas que con el paso de tiempo dejan de doler y superarlas, tambien dejan cicatrices que vamos a recordar toda la vida porque eso demuestra lo que fuimos y lo que llegamos a ser hoy en día, esas cicatrices que a pesar de que nos dejan marcados no significa que tengamos que recordar lo malo que vivimos, al contrario hay que hacer como lo hago yo verle lo bonito verle los buenos recuerdos... Ver lo que realmente aprendí de ello y no dejarlo como un error del pasado, mas bien como una lección...
+
+También quiero recalca que no quiero que ella piense que la voy a a odiar ni nada por el estilo al contrario aprecio mucho y valoro mucho la persona que es y que marcó uno de los momentos más importantes de mi vida que también aprendí de ella aún siendo mayor que ella, que a pesar de estos momentos de tormenta sigo viendole el lado bonito a las cosas no por ser indoloro si no porque ella genera esos sentimientos en mi a pesar del dolor que me puede llegar a generar sigo viendole el lado bonito y mira q no puedo llegar a a odiar siquiera un momento no se si es cariño o ternura, amor o comprensión pero de verdad ella si se merece lo mejor porque no es una mala persona y es diferente al resto de personas que no se merecen ni el perdón de alguien...
+
+La verdad lo que quisiera lo que anhelo en estos momentos es que ella me necesitara a su lado y que ella va a estar bien que quiere estar conmigo que ella quiere ser una persona para mi pero eso es solamente una ilusión mía, necesito pensar mejor las cosas antes de tomar esta desicion y talvez algún día me de de cuenta que no fue una derrota si no que fue una bonita experiencia...
+
+Por ahora seguiré viendo que pasa con la situación, no se que responderle a ese mensaje pero lo que si se es que quiero lo mejor para ella a pesar de que lo quiera todo con ella... Gracias por todo y por todos se que no lo ves como yo pero de verdad gracias ya que me enseñaste mucho y quiero que sepas lo importante que eres para mí la verdad es algo inexplicable porque así como  esta vida no todo tiene una explicación exacta para todo así lo es contigo créeme que cuando te digo que te quiero, que valoro cada momento y que te aprecio mucho es de verdad la verdad si me hubiera gustado estar ahí pr a ti ser esa persona tuya haber sentido el calor de tu amor sobre mi pecho y haber compartido conmigo y haber echo unas bonitas experiencias haber formado una bonita pareja pero no se "quiza' en otro espacio si... talvez en otro momentico... Quizá en otro horario si... Quizá logramos entender... Quizás en otra temporada tengamos un final bonito... Quizá en otro tiempo vuelva a mi tu sonrisa y tu olor cito... ❤️‍🩹" (la canción de Kapo - No Cry me transmite ese sentimiento) 
+
+
+Si algún día llego a publicar esto o enviártelo quiero que no lo escribi yo fue una desicion de mi corazón y mi subconsciente interpretando una despedida... (7:22 A.M)
+ `;
+const textoSentimental=`Lo que realmente siento y quiero para ti.
+
+Olí este soy yo la parte que más te quiero te te trata con cariño la que me dan ganas de quererte todos los días es difícil para mí pensar que tienes que tomar distancia para poderte sanar y me duele mucho eso ya que no se como tomarlo ni como tenerlo en cuenta créeme claro que me importa mucho como te sientes y como estas todos los días porque eres una gran persona y una persona muy fuerte por enfrentarte cara a cara contra ti ti misma y a esos sentimientos , ahora bien quiero que sepas que soy esa parte que no quiere dejarte ir porque siento que tu yo podemos ser felizes en algún punto de la vida talvez lo este diciendo por algún motivo o simplemente sea una ilusión mía pero a mi me gusta mucho hacerte feliz y hacerte sentir bien pero creo que en estos momentos no puedo ya que esos sentimientos que talvez tengas por otra persona sean más fuertes que los míos, y entre en una lucha donde no se si vaya a perder si es mejor esperar pero no se cuanto vaya a tardar pero creme que me estoy convenciendo de esperarte porque te quiero mucho, pero el sentido de la razón dice la verdad cuando me dice que si tu no me das señales de seguir queriéndote  o saber que estas ahí para mi no es buena idea segur insistiendo... Y me da miedito (Me da miedo perderte) porque en el fondo yo sabía que tu si me querías mucho y que tienes una forma muy bonita de querer solamente quiero que sepas que te puedo pertenecer y que daría todo por ti, en los buenos y en los malos momentos, y que no te puedo decir que te puedo esperar toda la vida pero la verdad si me gustaría saber si en alguna parte de tu corazoncito te gustaría tenerme a tu lado, créeme que yo daría todo de mi para que tu estés bien y que puedas ser feliz pero necesito saber si estás dispuesta a hacerlo la verdad no te estoy proponiendo un compromiso moral por el momento solo te estoy pidiendo que me digas que que es lo mejor para ti que piensas al respecto... Aunque la razón me diga que no debería insistirte (pero me gusta hacerlo) me gustaría saberlo porque lo digo mucho eres muy importante para mí, y no me gustaría perderte ahora porque sabes si me he llegado a enamorar de ti y me gusta todo de ti y ahora no quiero pensar en dejarte sola porque eso no es algo que haría mi parte, la verdad es que me quedaría a tu lado como tu amigo para apoyarte en tu mal momento no importa si me dices que me puedes llegar a hacer daño porque no lo veo de esa manera ya que si lo tengo claro lo dejaría pasar más bien se siente feito no poderte hablarte todos los días compartir contigo bonitos momentos, cambiarte la rutina y hablar de mushas cositas lo haría por ti y me gustaria saber que tan dispuesta estas a hacerlo...
+
+
+Quiero que sepas que me falto mucha información pero esas palabras son sinceras lo digo desde mi desicion y mi corazoncito que daría todo por ti también quiero que sepas que cuando el elije a una persona especial se aferra mucho, no te quiero presionar ahorita con un vínculo romántico solo quiero que me dejes quedarme a tu lado... `;
+const textoCompartido=`20-06-2026
+Aquel día no se ni que día fue escribí una carta de lo que razonaba en ese momento no hablo con lo que sentía si no habla mi parte del pensamiento que hoy me hace tomar desiciones en base a lo que he llegado a imaginar de tu situación y lo que realmente necesitas, pero en esta quiero escribir a como me siento, mira que a pesar de que nos llevamos tiempo conociendo se realmente lo que sientes por mi ni que soy en tu vida ni como me consideras pero quiero que tengas claro que tu, tu eres muy importante en este momento a pesar de que mi razón y mi subconsciente me dice lo contrario intentan estropear lo que siento por ti y esto lo dice mi corazón que aún guarda esa esperanza de tenerte, sabes no te puedo llegar a decir que te amo porque aún me falta conocerte más y muchas cosas y que es verdad que llevamos poquito tiempo conociendonos pero mira que tu me gustas mucho en muchos sentidos se que tienes tanto tus cualidades y tus defectos, cambios de humor pero quiero que sepas que te quiero por lo que conozco de ti y si me gustaría segur conociéndote, yo soy una persona que cuando me encariño específicamente con una persona en el sentido romántico me enganchó tanto que es difícil soltarla así como me está pasando en estos momentos, me ha dolido el echo de que ya no pueda tener tus mensajes tus llamadas tu tiempo no saber como estas no saber que tal fue tu día no saber que tienes en mente que te gustaría hacer que te gustaría contar simplemente tenerte a ti, suena obsesivo pero es mi manera de querer a alguien literal aún me la paso pensando todo el día en vos pero creo que me confunde el echo de que ya no se cual es mi lugar dejando de hacer esas cosas, y al dejarlas de hacer siento que estoy reprimiendo a mi corazón, ahora bien sobre tu situación no creo que quieras contarme la ta sea porque no quieres hacerme daño o bien es muy personal pero realmente no se que es lo que sientes o como las estas pasando ( la verdad he tenido suposiciones pero vagas sobre lo que estás pasando) y pensar que esas suposiciones en vez de ayudarme me hacen pensar en el echo de que hay algo más fuerte que lo que yo siento por ti... Me siento tonto al saber que yo estoy tratando de interpretar de que llegues a quererme mucho más sabiendo que estas intentando superar algo más fuerte que eso algo que talvez tuvo más tiempo, algo en lo que llevas intentando superar meses, me siento tonto porque supongo tengo muy poco tiempo en tu vida y estaba luchando contra eso y eso es lo que me tiene confundido pero ns mi corazón dice ser más fuerte y llegar a quererte más que a eso, de echo daría todo por intentar hacértelo saber pero la verdad no se pienso más en ti y en que no quieres sentir nada en estos momentos se que se siente perder en algo así, y yo creo que a mi me ira a pasar lo mismo, me termino lastimando tanto que no me dan ganas de sentir nada, mira que a mi me duele musho que no me trates bonito como lo hacías antes se que suena egoísta pero es la vd
+
+Perdón si esto suena confuso pero fue lo que me salió de momento me gustaría haber escribo algo más claro pero mi pensamientos andan muy confundidos ahora no quería decirte nada de esto porque ya es suficiente con lo que andas vendiendo hoy en día, me hubiera gustado mucho mucho haberte dicho que estaba bien y seguir adelante pero no se mi subconsciente no me dejo siento que esta buscando algo de ti para tomar una decisión o tener una aprobación...`;
+
+let readR=false, readS=false;
+let writer=null;
+
+function start(){
+ document.getElementById('welcome').classList.add('hidden');
+ document.getElementById('menu').classList.remove('hidden');
+ document.getElementById('bgMusic').play().catch(()=>{});
+}
+
+function typeWriter(el,text){
+ el.textContent='';
+ let i=0;
+ clearInterval(writer);
+ writer=setInterval(()=>{
+  el.textContent+=text.charAt(i++);
+  if(i>=text.length) clearInterval(writer);
+ },25);
+}
+
+function openLetter(w){
+ document.getElementById('menu').classList.add('hidden');
+ document.getElementById('reader').classList.remove('hidden');
+ if(w==='r'){
+  readR=true;
+  document.getElementById('title').textContent='Lo que ha pensado mi parte racional';
+  typeWriter(document.getElementById('text'),textoRacional);
+ }else{
+  readS=true;
+  document.getElementById('title').textContent='Lo que diría mi parte sentimental';
+  typeWriter(document.getElementById('text'),textoSentimental);
+ }
+}
+
+function back(){
+ document.getElementById('reader').classList.add('hidden');
+ document.getElementById('menu').classList.remove('hidden');
+ if(readR && readS) document.getElementById('secret').style.display='block';
+}
+
+function shared(){
+ document.getElementById('menu').classList.add('hidden');
+ document.getElementById('reader').classList.remove('hidden');
+ document.getElementById('title').textContent='Pensamiento compartido';
+ typeWriter(document.getElementById('text'),textoCompartido);
+}
+
+// stars
+const c=document.getElementById('sky'),x=c.getContext('2d');
+function resize(){c.width=innerWidth;c.height=innerHeight}
+resize(); addEventListener('resize',resize);
+const stars=Array.from({length:120},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+0.3,a:Math.random()}));
+let mx=-999,my=-999;
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+function draw(){
+ x.clearRect(0,0,c.width,c.height);
+ stars.forEach(s=>{
+  let d=Math.hypot(mx-s.x,my-s.y);
+  let r=s.r+(d<100?(100-d)/60:0);
+  x.beginPath(); x.arc(s.x,s.y,r,0,Math.PI*2);
+  x.fillStyle=`rgba(255,255,255,${0.4+s.a*0.6})`; x.fill();
+ });
+ requestAnimationFrame(draw);
+}
+
+let shooting=null;
+setInterval(()=>{
+ shooting={life:0,x:Math.random()*c.width,y:Math.random()*150};
+},12000);
+
+const oldDraw=draw;
+function draw(){
+ x.clearRect(0,0,c.width,c.height);
+ stars.forEach(s=>{
+  let d=Math.hypot(mx-s.x,my-s.y);
+  let rr=s.r+(d<120?(120-d)/60:0);
+  x.beginPath();
+  x.arc(s.x,s.y,rr,0,Math.PI*2);
+  x.fillStyle=`rgba(255,255,255,${0.4+s.a*0.6})`;
+  x.fill();
+ });
+
+ if(shooting){
+   shooting.life+=5;
+   x.beginPath();
+   x.moveTo(shooting.x,shooting.y);
+   x.lineTo(shooting.x-shooting.life,shooting.y+shooting.life*0.4);
+   x.strokeStyle='rgba(255,255,255,.8)';
+   x.lineWidth=2;
+   x.stroke();
+   if(shooting.life>250) shooting=null;
+ }
+
+ requestAnimationFrame(draw);
+}
+
+
+const cardBox=document.querySelector('.card');
+
+function cinematicOpen(){
+ cardBox.classList.remove('fadeIn');
+ void cardBox.offsetWidth;
+ cardBox.classList.add('fadeIn');
+}
+
+const oldOpenLetter=openLetter;
+openLetter=function(w){
+ cinematicOpen();
+ setTimeout(()=>oldOpenLetter(w),700);
+}
+
+const oldShared=shared;
+shared=function(){
+ cinematicOpen();
+ oldShared();
+}
+
+const oldBack=back;
+back=function(){
+ oldBack();
+ if(readR && readS){
+   const s=document.getElementById('secret');
+   s.classList.add('secretUnlocked');
+   document.body.classList.add('skyGlow');
+   setTimeout(()=>document.body.classList.remove('skyGlow'),3000);
+ }
+}
+
+
+draw();
+</script>
+</body>
+</html>
